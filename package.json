@@ -1,5 +1,5 @@
 {
-  "name": "sqs-stream",
+  "name": "sqs-duplex",
   "version": "0.1.0",
   "description": "Duplex stream abstraction on top of Amazon SQS",
   "main": "index.js",
@@ -8,16 +8,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/brianc/node-sqs-stream.git"
+    "url": "git://github.com/brianc/node-sqs-duplex.git"
   },
   "keywords": [
     "sqs",
-    "stream"
+    "stream",
+    "queue"
   ],
   "author": "Brian M. Carlson",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/brianc/node-sqs-stream/issues"
+    "url": "https://github.com/brianc/node-sqs-duplex/issues"
   },
   "devDependencies": {
     "mocha": "~1.17.0",
