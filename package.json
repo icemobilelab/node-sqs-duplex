@@ -1,6 +1,6 @@
 {
   "name": "sqs-stream",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Duplex stream abstraction on top of Amazon SQS",
   "main": "index.js",
   "scripts": {
