@@ -28,7 +28,6 @@ var queueTest = function() {
 
 describe('writing', function() {
   queueTest()
-
   it('writes', function(done) {
     this.timeout(5000)
     this.stream.write('hello', done)
@@ -55,13 +54,13 @@ describe('reading empty', function() {
   queueTest()
   it('never returns anything', function(done) {
     this.timeout(20000)
-    this.stream.once('readable', function() {
-      done(new Error('Should not have become readable'))
-    })
     var self = this
-    setTimeout(function() {
+    this.stream.once('readable', function() {
       self.stream.close()
       done()
+    })
+    setTimeout(function() {
+      self.stream.write('test')
     }, 5000)
   })
 })

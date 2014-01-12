@@ -54,7 +54,6 @@ SqsStream.prototype._pop = function(queueUrl) {
   self.log('popping message')
 
   self.sqs.receiveMessage(options, function(err, data) {
-    self.popping = false
     if(err) { return self.emit('error', err) }
 
     //read from stream in loop
@@ -63,11 +62,13 @@ SqsStream.prototype._pop = function(queueUrl) {
       self.log('pop 0, sleeping for ' + self.popDelay)
       self.tid = setTimeout(function() {
         self.log('trying to re-read from empty queue')
+        self.popping = false
         self._pop(queueUrl)
       }, self.popDelay)
       return
     }
 
+    self.popping = false
     self.popDelay = 1
     self.log('pop', data.Messages.length)
     for(var i = 0; i < data.Messages.length; i++) {
