@@ -7,8 +7,8 @@ var SqsStream = function(sqs, queue, options) {
     this.popDelay = 1;
     this.queue = queue;
     this.log = (options||0).log || function() {};
-    //default maxSleep is 15 seconds
-    this.maxSleep = (options||0).maxSleep || (1000 * 60 * 15);
+    //default maxWait is  one minute.
+    this.maxWait = (options||0).maxWait || 20;
     var self = this;
     this.queueUrl = dogpile(function(cb) {
         self.log('getting queue url for queue', queue);
@@ -53,7 +53,8 @@ SqsStream.prototype._pop = function(queueUrl) {
     var self = this;
     var options = {
         QueueUrl: queueUrl,
-        MaxNumberOfMessages: 10
+        MaxNumberOfMessages: 10,
+        WaitTimeSeconds: this.maxWait
     };
     self.log('popping message');
 
@@ -62,13 +63,11 @@ SqsStream.prototype._pop = function(queueUrl) {
 
         //read from stream in loop
         if(!(data.Messages||0).length) {
-            self.popDelay = Math.min(self.maxSleep, self.popDelay * 10);
-            self.log('pop 0, sleeping for ' + self.popDelay);
-            self.tid = setTimeout(function() {
-                self.log('trying to re-read from empty queue');
-                self.popping = false;
-                self._pop(queueUrl);
-            }, self.popDelay);
+            self.tid = setImmediate(function retryReceiveMessage() {
+                this.log('trying to re-read from empty queue');
+                this.popping = false;
+                this._pop(queueUrl);
+            }.bind(self));
             return;
         }
 
