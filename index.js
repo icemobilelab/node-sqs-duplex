@@ -25,7 +25,7 @@ var SqsStream = function(sqs, queue, options) {
 util.inherits(SqsStream, Duplex);
 
 SqsStream.prototype.read = function() {
-    this.log('FOOOOOOOO');
+    this.log('READING!');
     var msg = Duplex.prototype.read.apply(this, arguments);
     this.log('Messages left: ' + this._readableState.buffer.length);
     return msg;
