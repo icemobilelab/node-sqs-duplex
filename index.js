@@ -6,9 +6,9 @@ var SqsStream = function(sqs, queue, options) {
     this.sqs = sqs;
     this.popDelay = 1;
     this.queue = queue;
-    this.log = (options||0).log || function() {};
+    this.log = (options || 0).log || function() {};
     //default maxWait is  one minute.
-    this.maxWait = (options||0).maxWait || 20;
+    this.maxWait = (options || 0).maxWait || 20;
     var self = this;
     this.queueUrl = dogpile(function(cb) {
         self.log('getting queue url for queue', queue);
@@ -18,11 +18,18 @@ var SqsStream = function(sqs, queue, options) {
     });
     Duplex.call(this, {
         objectMode: true,
-        highWaterMark: (options||0).highWaterMark || 10
+        highWaterMark: (options || 0).highWaterMark || 10
     });
 };
 
 util.inherits(SqsStream, Duplex);
+
+SqsStream.prototype.read = function() {
+    this.log('FOOOOOOOO');
+    var msg = Duplex.prototype.read.apply(this, arguments);
+    this.log('Messages left: ' + this._readableState.buffer.length);
+    return msg;
+};
 
 SqsStream.prototype._write = function(msg, encoding, cb) {
     var self = this;
@@ -59,30 +66,29 @@ SqsStream.prototype._pop = function(queueUrl) {
     self.log('popping message');
 
     self.sqs.receiveMessage(options, function(err, data) {
+        self.popping = false;
         if(err) { return self.emit('error', err); }
 
         //read from stream in loop
-        if(!(data.Messages||0).length) {
-            self.tid = setImmediate(function retryReceiveMessage() {
-                this.log('trying to re-read from empty queue');
-                this.popping = false;
+        if(!(data.Messages || 0).length) {
+            self.log('trying to re-read from empty queue');
+            self.tid = setTimeout(function retryReceiveMessage() {
                 this._pop(queueUrl);
-            }.bind(self));
-            return;
+            }.bind(self), 10000);
+            return null;
         }
 
-        self.popping = false;
         self.popDelay = 1;
         self.log('pop', data.Messages.length);
         for(var i = 0; i < data.Messages.length; i++) {
             var msg = data.Messages[i];
             self.push(new Message(msg));
+            self.log('Messages left: ' + self._readableState.buffer.length);
         }
     });
 };
 
-SqsStream.prototype._read = function(n) {
-    //n is ignored in object mode
+SqsStream.prototype._read = function() {
     var self = this;
     this.queueUrl(function(err, data) {
         if(err) { return self.emit('error', err); }
