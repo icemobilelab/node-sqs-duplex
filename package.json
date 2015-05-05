@@ -1,6 +1,6 @@
 {
   "name": "@icemobile/sqs-duplex",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Duplex stream abstraction on top of Amazon SQS",
   "main": "index.js",
   "scripts": {
