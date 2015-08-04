@@ -9,6 +9,8 @@ var SqsStream = function(sqs, queue, options) {
     this.log = (options||0).log || function() {};
     //default maxWait is  one minute.
     this.maxWait = (options||0).maxWait || 20;
+    //Message attributes option is undefined by default.
+    this.messageAttributeNames = (options||0).messageAttributeNames;
     var self = this;
     this.queueUrl = dogpile(function(cb) {
         self.log('getting queue url for queue', queue);
@@ -54,7 +56,8 @@ SqsStream.prototype._pop = function(queueUrl) {
     var options = {
         QueueUrl: queueUrl,
         MaxNumberOfMessages: 10,
-        WaitTimeSeconds: this.maxWait
+        WaitTimeSeconds: this.maxWait,
+        MessageAttributeNames: this.messageAttributeNames
     };
     self.log('popping message');
 
