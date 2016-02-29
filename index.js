@@ -69,6 +69,7 @@ SqsStream.prototype._pop = function(queueUrl) {
         if(err) {
 
             if (err.code === INTERNAL_ERROR) {
+                self.log('Error while receiving a message', err);
                 self.tid = setTimeout(function retryReceiveMessage() {
                     this.log('Retrying after an internal error');
                     this.popping = false;
