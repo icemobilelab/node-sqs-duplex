@@ -2,10 +2,14 @@ var util = require('util');
 var Duplex = require('stream').Duplex;
 var dogpile = require('dogpile');
 
+var INTERNAL_ERROR = 'InternalError';
+
 var SqsStream = function(sqs, queue, options) {
     this.sqs = sqs;
     this.popDelay = 1;
     this.queue = queue;
+    //default retry timeout is 10 seconds.
+    this.retryTimeout = (options||0).retryTimeout || 10000;
     this.log = (options||0).log || function() {};
     //default maxWait is  one minute.
     this.maxWait = (options||0).maxWait || 20;
@@ -62,7 +66,20 @@ SqsStream.prototype._pop = function(queueUrl) {
     self.log('popping message');
 
     self.sqs.receiveMessage(options, function(err, data) {
-        if(err) { return self.emit('error', err); }
+        if(err) {
+
+            if (err.code === INTERNAL_ERROR) {
+                self.log('Error while receiving a message', err);
+                self.tid = setTimeout(function retryReceiveMessage() {
+                    this.log('Retrying after an internal error');
+                    this.popping = false;
+                    this._pop(queueUrl);
+                }.bind(self), self.retryTimeout);
+                return;
+            }
+
+            return self.emit('error', err);
+        }
 
         //read from stream in loop
         if(!(data.Messages||0).length) {
