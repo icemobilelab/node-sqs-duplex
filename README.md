@@ -22,6 +22,22 @@ var sqs = require('sqs-stream')(new AWS.SQS())
 var stream = sqs('my-queue-name')
 ```
 
+### options
+
+When creating a stream, you can also pass the options object:
+
+```
+var stream = sqs('my-queue-name', options);
+```
+
+The available options are:
+
+- `log`: the logger function, does nothing by default.
+- `maxWait`: maximum time to wait for a message when polling, in seconds. 20 by default.
+- `messageAttributeNames`: an array containing names of message attributes to request from SQS. Empty by default.
+- `retryTimeout`: when an InternalError is encountered while polling, the stream will wait for this many milliseconds before attempting again. 10000 by default.
+- `highWaterMark`: The maximum number of bytes to store in the internal buffer before ceasing to read from the underlying resource. 10 by default.
+
 ### writing
 
 ```js
