@@ -3,6 +3,7 @@ var Duplex = require('stream').Duplex;
 var dogpile = require('dogpile');
 
 var INTERNAL_ERROR = 'InternalError';
+var SERVICE_UNAVAILABLE_ERROR = 'ServiceUnavailable';
 
 var SqsStream = function(sqs, queue, options) {
     this.sqs = sqs;
@@ -68,7 +69,7 @@ SqsStream.prototype._pop = function(queueUrl) {
     self.sqs.receiveMessage(options, function(err, data) {
         if(err) {
 
-            if (err.code === INTERNAL_ERROR) {
+            if (err.code === INTERNAL_ERROR || err.code === SERVICE_UNAVAILABLE_ERROR) {
                 self.log('Error while receiving a message', err);
                 self.tid = setTimeout(function retryReceiveMessage() {
                     this.log('Retrying after an internal error');
