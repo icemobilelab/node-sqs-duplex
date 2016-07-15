@@ -1,6 +1,6 @@
 var assert = require('assert')
 var AWS = require('aws-sdk')
-var aws = new AWS.SQS()
+var aws = new AWS.SQS({region: 'eu-west-1'})
 var sqs = require('../')(aws)
 
 var create = function(name, cb) {
@@ -43,6 +43,44 @@ describe('reading', function() {
         var msg = stream.read()
         assert(msg, 'should have returned a message')
         assert.equal(msg.data, 'test')
+        stream.close()
+        done()
+      })
+    })
+  })
+})
+
+describe('reading after an error', function() {
+  queueTest()
+  it('reads after an error', function(done) {
+    this.timeout(20000)
+    var stream = this.stream
+
+    var remember = stream.sqs.receiveMessage;
+
+    stream.sqs.receiveMessage = function(options, cb) {
+        cb({
+            code: 'InternalError'
+        });
+    }
+
+    stream.retryTimeout = 500;
+
+    stream.write('test', function() {
+
+      stream.on('retryable-error', function(err) {
+
+        assert(err, 'should have returned an error')
+        assert(err.code == 'InternalError', 'error code is wrong')
+        stream.sqs.receiveMessage = remember;
+      })
+
+      stream.once('readable', function() {
+
+        var msg = stream.read()
+                console.log(msg)
+        assert(msg, 'should have returned a message')
+        assert(msg.data == 'test', 'message is wrong')
         stream.close()
         done()
       })

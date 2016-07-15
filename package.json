@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "mocha": "~1.17.0",
-    "aws-sdk": "~2.0.0-rc6"
+    "aws-sdk": "~2.4.7"
   },
   "dependencies": {
     "dogpile": "~0.1.2"
