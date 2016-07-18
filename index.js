@@ -76,7 +76,7 @@ SqsStream.prototype._pop = function(queueUrl) {
                     this.popping = false;
                     this._pop(queueUrl);
                 }.bind(self), self.retryTimeout);
-                return;
+                return self.emit('retryable-error', err);
             }
 
             return self.emit('error', err);
